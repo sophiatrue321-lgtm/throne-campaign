@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Throne Campaign — Sophia Truee</title>
+<meta name="description" content="Fund Goddess Sophia's relocation to Bristol. Tribute to spin the throne.">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Cinzel:wght@400;500;600;700&family=Cormorant+Unicase:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Decorative background layers -->
+<div class="bg-noise"></div>
+<div class="bg-vignette"></div>
+<div class="bg-ornament bg-ornament--top-left"></div>
+<div class="bg-ornament bg-ornament--bottom-right"></div>
+
+<!-- Status banner -->
+<div class="banner">
+  <span class="banner__pulse"></span>
+  <span class="banner__text">The Throne is Open · 11 May → 11 June</span>
+</div>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero__inner">
+    <div class="hero__crown" aria-hidden="true">
+      <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 50 L20 20 L35 35 L50 10 L65 35 L80 20 L90 50 Z" 
+              fill="none" stroke="currentColor" stroke-width="1.5" 
+              stroke-linejoin="round"/>
+        <circle cx="20" cy="20" r="2" fill="currentColor"/>
+        <circle cx="50" cy="10" r="3" fill="currentColor"/>
+        <circle cx="80" cy="20" r="2" fill="currentColor"/>
+        <line x1="10" y1="55" x2="90" y2="55" stroke="currentColor" stroke-width="1"/>
+      </svg>
+    </div>
+    <p class="hero__eyebrow">A Bristol Relocation</p>
+    <h1 class="hero__title">
+      <span class="hero__title-line">The Throne</span>
+      <span class="hero__title-line hero__title-line--accent">Campaign</span>
+    </h1>
+    <p class="hero__subtitle">
+      Goddess Sophia is moving her empire to Bristol.<br>
+      Tribute. Surrender. Let the throne decide where you serve.
+    </p>
+    
+    <a href="#tribute" class="hero__cta">
+      <span>Tribute & Spin</span>
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" 
+              fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
+</header>
+
+<!-- Total raised -->
+<section class="totals">
+  <div class="totals__inner">
+    <div class="totals__divider"></div>
+    <p class="totals__label">The Royal Treasury</p>
+    <div class="totals__numbers">
+      <span class="totals__raised" id="total-raised">£0</span>
+      <span class="totals__separator">/</span>
+      <span class="totals__goal" id="total-goal">£0</span>
+    </div>
+    <div class="totals__bar">
+      <div class="totals__bar-fill" id="total-bar"></div>
+    </div>
+    <p class="totals__percentage"><span id="total-percentage">0</span>% of the throne funded</p>
+    <div class="totals__divider"></div>
+  </div>
+</section>
+
+<!-- Items -->
+<section class="items">
+  <div class="items__header">
+    <p class="items__eyebrow">The Goddess Decides</p>
+    <h2 class="items__title">What Your Tribute Funds</h2>
+    <p class="items__lede">
+      Eight altars. One spin. The throne decides which receives your devotion.
+    </p>
+  </div>
+  
+  <div class="items__grid" id="items-grid">
+    <!-- Items injected by JS -->
+    <div class="items__loading">Loading the throne...</div>
+  </div>
+</section>
+
+<!-- Tribute CTA -->
+<section class="tribute" id="tribute">
+  <div class="tribute__inner">
+    <p class="tribute__eyebrow">To Spin the Throne</p>
+    <h2 class="tribute__title">Tribute First.<br><em>Then Surrender.</em></h2>
+    <p class="tribute__instructions">
+      Tribute a minimum of <strong>£10</strong> via any platform below. 
+      Return here with proof and Goddess will unlock your spin.
+    </p>
+    
+    <div class="tribute__platforms">
+      <a href="#" class="tribute__platform" data-platform="loyalfans">
+        <span class="tribute__platform-name">LoyalFans</span>
+        <span class="tribute__platform-handle">@SophiaTruee</span>
+      </a>
+      <a href="#" class="tribute__platform" data-platform="throne">
+        <span class="tribute__platform-name">Throne</span>
+        <span class="tribute__platform-handle">Wishlist</span>
+      </a>
+      <a href="#" class="tribute__platform" data-platform="iwc">
+        <span class="tribute__platform-name">IWantClips</span>
+        <span class="tribute__platform-handle">Sophia Truee</span>
+      </a>
+      <a href="#" class="tribute__platform" data-platform="c4s">
+        <span class="tribute__platform-name">Clips4Sale</span>
+        <span class="tribute__platform-handle">Sophia Truee</span>
+      </a>
+      <a href="#" class="tribute__platform" data-platform="tipfunder">
+        <span class="tribute__platform-name">Tipfunder</span>
+        <span class="tribute__platform-handle">Sophia Truee</span>
+      </a>
+    </div>
+    
+    <div class="tribute__claim">
+      <p class="tribute__claim-prompt">Already tributed?</p>
+      <a href="#" class="tribute__claim-link" id="claim-link">
+        Claim Your Spin →
+      </a>
+      <p class="tribute__claim-note">Coming soon — claim form launches with the wheel</p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer__inner">
+    <p class="footer__quote">
+      <em>"The throne does not beg. It receives."</em>
+    </p>
+    <div class="footer__meta">
+      <span>The Throne Campaign · 11 May → 11 June 2026</span>
+      <span>·</span>
+      <span>MST Productions Ltd</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
