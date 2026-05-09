@@ -278,18 +278,24 @@
     document.querySelectorAll('.platform-btn').forEach(btn => {
       const platformKey = btn.dataset.platform;
       
-      // Set the URL: Throne uses the item-specific URL; others use general platform URL
-      if (btn.tagName === 'A') {
-        if (platformKey === 'throne' && result.item_throne_url) {
-          btn.href = result.item_throne_url;
-        } else if (config.PLATFORMS[platformKey]) {
-          btn.href = config.PLATFORMS[platformKey];
-        } else {
-          btn.href = '#';
-        }
+      // Determine the URL: Throne uses item-specific URL; others use general
+      let url = null;
+      if (platformKey === 'throne' && result.item_throne_url) {
+        url = result.item_throne_url;
+      } else if (platformKey === 'other') {
+        url = null; // No external URL for "other"
+      } else if (config.PLATFORMS[platformKey]) {
+        url = config.PLATFORMS[platformKey];
       }
       
-      btn.addEventListener('click', () => {
+      // Set the href if applicable (for users who right-click "Open in new tab")
+      if (btn.tagName === 'A' && url) {
+        btn.href = url;
+      }
+      
+      btn.addEventListener('click', (e) => {
+        e.preventDefault(); // Prevent default navigation - we handle it manually
+        
         // Mark as clicked
         document.querySelectorAll('.platform-btn').forEach(b => 
           b.classList.remove('platform-btn--clicked')
@@ -303,7 +309,12 @@
         const confirmBlock = document.getElementById('confirm-block');
         confirmBlock.classList.add('contribution-block--unlocked');
         
-        // Smooth-scroll to confirm form on mobile/longer screens
+        // Open external URL in new tab (only for actual external platforms)
+        if (url) {
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }
+        
+        // Smooth-scroll to confirm form after a brief delay
         setTimeout(() => {
           confirmBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 300);

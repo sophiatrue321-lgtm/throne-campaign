@@ -710,6 +710,54 @@
   opacity: 1;
 }
 
+/* Spin Again */
+
+.result-stage__spin-again {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(212, 160, 23, 0.15);
+  text-align: center;
+}
+
+.spin-again-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.1rem 2.5rem;
+  background: linear-gradient(135deg, var(--burgundy) 0%, var(--wine-rich) 100%);
+  border: 1px solid var(--gold-rich);
+  color: var(--gold-pale);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.spin-again-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(168, 38, 73, 0.5);
+  border-color: var(--gold-bright);
+  color: var(--cream);
+}
+
+.spin-again-btn__icon {
+  color: var(--gold-bright);
+  font-size: 1rem;
+}
+
+.spin-again-btn__note {
+  margin-top: 0.75rem;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--gold-rich);
+  opacity: 0.6;
+}
+
 /* Mobile tweaks */
 
 @media (max-width: 640px) {

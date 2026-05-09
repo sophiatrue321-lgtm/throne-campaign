@@ -241,83 +241,93 @@
     const list = document.getElementById('thermometer-list');
     list.innerHTML = '<p class="admin-empty">Loading items...</p>';
     
-    const { data, error } = await supabase
-      .from('items')
-      .select('*')
-      .order('display_order');
-    
-    if (error) {
-      console.error('Items load error:', error);
-      list.innerHTML = '<p class="admin-empty">Failed to load items.</p>';
-      return;
-    }
-    
-    list.innerHTML = '';
-    data.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'therm-card';
-      card.dataset.itemId = item.id;
+    try {
+      const { data, error } = await supabase
+        .from('items')
+        .select('id, slug, display_name, goal_amount, raised_amount, throne_url, display_order')
+        .order('display_order');
       
-      const throneLink = item.throne_url
-        ? `<a href="${escapeHtml(item.throne_url)}" target="_blank" rel="noopener noreferrer" class="therm-card__throne-link">View on Throne ↗</a>`
-        : '';
+      if (error) {
+        console.error('Items load error:', error);
+        list.innerHTML = `<p class="admin-empty">Failed to load items: ${escapeHtml(error.message || 'Unknown error')}</p>`;
+        return;
+      }
       
-      card.innerHTML = `
-        <h3 class="therm-card__name">${escapeHtml(item.display_name)}</h3>
-        <p class="therm-card__current">
-          Currently: £${Number(item.raised_amount).toLocaleString('en-GB')} 
-          / £${Number(item.goal_amount).toLocaleString('en-GB')}
-        </p>
-        <div class="therm-card__form">
-          <input type="number" class="therm-card__input" 
-                 placeholder="New total £" 
-                 min="0" step="0.01"
-                 value="${item.raised_amount}">
-          <button type="button" class="therm-card__save" data-action="save">Save</button>
-        </div>
-        ${throneLink}
-      `;
-      list.appendChild(card);
-    });
-    
-    // Wire save buttons
-    list.querySelectorAll('.therm-card__save').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const card = btn.closest('.therm-card');
-        const itemId = parseInt(card.dataset.itemId);
-        const input = card.querySelector('.therm-card__input');
-        const newAmount = parseFloat(input.value);
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="admin-empty">No items found.</p>';
+        return;
+      }
+      
+      list.innerHTML = '';
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'therm-card';
+        card.dataset.itemId = item.id;
         
-        if (isNaN(newAmount) || newAmount < 0) {
-          alert('Please enter a valid amount');
-          return;
-        }
+        const throneLink = item.throne_url
+          ? `<a href="${escapeHtml(item.throne_url)}" target="_blank" rel="noopener noreferrer" class="therm-card__throne-link">View on Throne ↗</a>`
+          : '';
         
-        btn.disabled = true;
-        btn.textContent = 'Saving...';
-        
-        const { data, error } = await supabase.rpc('admin_update_item_raised', {
-          p_item_id: itemId,
-          p_new_amount: newAmount,
-        });
-        
-        if (error) {
-          alert('Failed: ' + error.message);
-          btn.disabled = false;
-          btn.textContent = 'Save';
-          return;
-        }
-        
-        btn.classList.add('saved');
-        btn.textContent = '✓ Saved';
-        setTimeout(() => {
-          btn.classList.remove('saved');
-          btn.textContent = 'Save';
-          btn.disabled = false;
-          loadThermometers();
-        }, 1500);
+        card.innerHTML = `
+          <h3 class="therm-card__name">${escapeHtml(item.display_name)}</h3>
+          <p class="therm-card__current">
+            Currently: £${Number(item.raised_amount).toLocaleString('en-GB')} 
+            / £${Number(item.goal_amount).toLocaleString('en-GB')}
+          </p>
+          <div class="therm-card__form">
+            <input type="number" class="therm-card__input" 
+                   placeholder="New total £" 
+                   min="0" step="0.01"
+                   value="${item.raised_amount}">
+            <button type="button" class="therm-card__save" data-action="save">Save</button>
+          </div>
+          ${throneLink}
+        `;
+        list.appendChild(card);
       });
-    });
+      
+      // Wire save buttons
+      list.querySelectorAll('.therm-card__save').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const card = btn.closest('.therm-card');
+          const itemId = parseInt(card.dataset.itemId);
+          const input = card.querySelector('.therm-card__input');
+          const newAmount = parseFloat(input.value);
+          
+          if (isNaN(newAmount) || newAmount < 0) {
+            alert('Please enter a valid amount');
+            return;
+          }
+          
+          btn.disabled = true;
+          btn.textContent = 'Saving...';
+          
+          const { data, error } = await supabase.rpc('admin_update_item_raised', {
+            p_item_id: itemId,
+            p_new_amount: newAmount,
+          });
+          
+          if (error) {
+            alert('Failed: ' + error.message);
+            btn.disabled = false;
+            btn.textContent = 'Save';
+            return;
+          }
+          
+          btn.classList.add('saved');
+          btn.textContent = '✓ Saved';
+          setTimeout(() => {
+            btn.classList.remove('saved');
+            btn.textContent = 'Save';
+            btn.disabled = false;
+            loadThermometers();
+          }, 1500);
+        });
+      });
+    } catch (err) {
+      console.error('Thermometers unexpected error:', err);
+      list.innerHTML = `<p class="admin-empty">Unexpected error: ${escapeHtml(err.message || 'Unknown')}</p>`;
+    }
   }
   
   /* --- Stats --------------------------------------------------- */
