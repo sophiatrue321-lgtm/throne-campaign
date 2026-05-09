@@ -277,24 +277,17 @@
   function wirePlatformButtons(result) {
     document.querySelectorAll('.platform-btn').forEach(btn => {
       const platformKey = btn.dataset.platform;
+      const isAnchor = btn.tagName === 'A';
       
-      // Determine the URL: Throne uses item-specific URL; others use general
-      let url = null;
-      if (platformKey === 'throne' && result.item_throne_url) {
-        url = result.item_throne_url;
-      } else if (platformKey === 'other') {
-        url = null; // No external URL for "other"
-      } else if (config.PLATFORMS[platformKey]) {
-        url = config.PLATFORMS[platformKey];
-      }
-      
-      // Set the href if applicable (for users who right-click "Open in new tab")
-      if (btn.tagName === 'A' && url) {
-        btn.href = url;
+      // For Throne specifically, override the href to use the item-specific URL
+      if (isAnchor && platformKey === 'throne' && result.item_throne_url) {
+        btn.href = result.item_throne_url;
       }
       
       btn.addEventListener('click', (e) => {
-        e.preventDefault(); // Prevent default navigation - we handle it manually
+        // For "Other" (non-anchor button), we don't navigate anywhere
+        // For anchors, let the browser navigate naturally to the URL in href
+        // We just track the click for state updates
         
         // Mark as clicked
         document.querySelectorAll('.platform-btn').forEach(b => 
@@ -309,15 +302,15 @@
         const confirmBlock = document.getElementById('confirm-block');
         confirmBlock.classList.add('contribution-block--unlocked');
         
-        // Open external URL in new tab (only for actual external platforms)
-        if (url) {
-          window.open(url, '_blank', 'noopener,noreferrer');
+        // For "Other" button (non-anchor), prevent default and scroll to form
+        if (!isAnchor) {
+          e.preventDefault();
+          setTimeout(() => {
+            confirmBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
         }
-        
-        // Smooth-scroll to confirm form after a brief delay
-        setTimeout(() => {
-          confirmBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 300);
+        // For anchors, the browser opens the URL in a new tab naturally.
+        // The original tab keeps its state (which now shows step 3 unlocked).
       });
     });
   }
