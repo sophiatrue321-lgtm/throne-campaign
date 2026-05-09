@@ -1,12 +1,10 @@
 /* ============================================================
    THRONE CAMPAIGN — Wheel
    
-   States:
-     loading -> ready -> spinning -> result
+   Flow:
+     loading -> ready -> spinning -> result (with 3-step contribution flow)
    Or for already-spun token:
-     loading -> result (with previous result data)
-   Or for not-yet-approved token:
-     loading -> not-ready
+     loading -> result (showing previous result)
    ============================================================ */
 
 (function() {
@@ -20,19 +18,21 @@
   
   // Brand palette for wheel segments
   const SEGMENT_COLOURS = [
-    { fill: '#8b1d3b', text: '#f5d76e' }, // burgundy / pale gold
-    { fill: '#3d0f1c', text: '#e8c547' }, // bordeaux / bright gold
-    { fill: '#6b1a30', text: '#f4ebd4' }, // wine rich / cream
-    { fill: '#4a1424', text: '#d4a017' }, // wine / rich gold
-    { fill: '#a82649', text: '#f4ebd4' }, // burgundy glow / cream
-    { fill: '#2a0a13', text: '#f5d76e' }, // wine deep / pale gold
-    { fill: '#8b1d3b', text: '#e8c547' }, // burgundy / bright gold
-    { fill: '#3d0f1c', text: '#f4ebd4' }, // bordeaux / cream
+    { fill: '#8b1d3b', text: '#f5d76e' },
+    { fill: '#3d0f1c', text: '#e8c547' },
+    { fill: '#6b1a30', text: '#f4ebd4' },
+    { fill: '#4a1424', text: '#d4a017' },
+    { fill: '#a82649', text: '#f4ebd4' },
+    { fill: '#2a0a13', text: '#f5d76e' },
+    { fill: '#8b1d3b', text: '#e8c547' },
+    { fill: '#3d0f1c', text: '#f4ebd4' },
   ];
   
   let state = {
     token: null,
     items: [],
+    chosenItem: null,
+    selectedAmount: null,
   };
   
   /* --- Helpers ------------------------------------------------- */
@@ -42,7 +42,7 @@
   }
   
   function showState(stateId) {
-    const ids = ['loading-state', 'invalid-state', 'not-ready-state', 'ready-state', 'spinning-state', 'result-state'];
+    const ids = ['loading-state', 'invalid-state', 'not-ready-state', 'ready-state', 'result-state'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.hidden = id !== stateId;
@@ -73,7 +73,6 @@
       const endAngle = startAngle + segAngle;
       const colour = SEGMENT_COLOURS[idx % SEGMENT_COLOURS.length];
       
-      // Pie slice path
       const x1 = cx + r * Math.cos(startAngle);
       const y1 = cy + r * Math.sin(startAngle);
       const x2 = cx + r * Math.cos(endAngle);
@@ -94,13 +93,11 @@
       path.setAttribute('stroke-width', '1.5');
       svg.appendChild(path);
       
-      // Item label - placed along the radial centre of segment
       const labelAngle = startAngle + segAngle / 2;
       const labelRadius = r * 0.65;
       const lx = cx + labelRadius * Math.cos(labelAngle);
       const ly = cy + labelRadius * Math.sin(labelAngle);
       
-      // Rotate text so it reads outward
       const rotateDeg = (labelAngle * 180) / Math.PI + 90;
       
       const textWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -115,7 +112,6 @@
       text.setAttribute('letter-spacing', '1');
       text.setAttribute('fill', colour.text);
       
-      // Split long names into two lines
       const words = item.display_name.split(' ');
       if (words.length > 1) {
         words.forEach((word, i) => {
@@ -137,91 +133,274 @@
     targetEl.appendChild(svg);
   }
   
-  /* --- Spin animation ------------------------------------------ */
+  /* --- Spin animation (FIXED) ---------------------------------- */
   
   function spinWheelToTarget(wheelEl, targetItemIndex, totalItems) {
     return new Promise((resolve) => {
       const segAngle = 360 / totalItems;
-      // The pointer is at top (12 o'clock). Segments start at -90 degrees.
-      // To land segment N under pointer, wheel must rotate so segment N's centre is at top.
-      // Segment N's centre is at angle (segAngle * N) + (segAngle / 2), measured from start (top).
-      // We need to rotate wheel by negative of that, plus full spins for drama.
       const segmentCentreFromTop = (segAngle * targetItemIndex) + (segAngle / 2);
-      const fullSpins = 6; // 6 full rotations for drama
+      const fullSpins = 6;
       const finalRotation = (fullSpins * 360) - segmentCentreFromTop;
       
-      // Apply rotation
-      wheelEl.style.transition = 'transform 5s cubic-bezier(0.15, 0.85, 0.25, 1)';
-      wheelEl.style.transform = `rotate(${finalRotation}deg)`;
-      
-      // Wait for animation to complete
-      setTimeout(resolve, 5100);
+      // CRITICAL FIX: ensure starting state is clean before applying transition
+      // 1. Remove any transition (so the reset is instant, not animated)
+      wheelEl.style.transition = 'none';
+      // 2. Reset rotation to 0
+      wheelEl.style.transform = 'rotate(0deg)';
+      // 3. Force a layout reflow so the browser applies the reset NOW
+      void wheelEl.offsetWidth;
+      // 4. Apply the long transition and target rotation in next frame
+      requestAnimationFrame(() => {
+        wheelEl.style.transition = 'transform 5s cubic-bezier(0.15, 0.85, 0.25, 1)';
+        wheelEl.style.transform = `rotate(${finalRotation}deg)`;
+        
+        // Resolve when transition completes
+        const onEnd = () => {
+          wheelEl.removeEventListener('transitionend', onEnd);
+          resolve();
+        };
+        wheelEl.addEventListener('transitionend', onEnd);
+        // Fallback in case transitionend doesn't fire
+        setTimeout(resolve, 5500);
+      });
     });
   }
   
-  /* --- Render: result page ------------------------------------- */
+  /* --- Render: result ------------------------------------------ */
   
   function renderResult(result, isFreshSpin) {
+    state.chosenItem = result;
+    
     const eyebrowEl = document.getElementById('result-eyebrow');
     const nameEl = document.getElementById('result-item-name');
     const descEl = document.getElementById('result-item-description');
-    const handleEl = document.getElementById('result-handle');
-    const amountEl = document.getElementById('result-amount');
-    const altarStatusEl = document.getElementById('result-altar-status');
-    const throneLink = document.getElementById('result-throne-link');
+    const progressEl = document.getElementById('result-progress-text');
     
-    eyebrowEl.textContent = isFreshSpin ? 'Goddess Has Decided' : 'Your Decree';
+    eyebrowEl.textContent = isFreshSpin ? 'Goddess Has Decided' : 'Your Decree Stands';
     nameEl.textContent = result.item_display_name;
     descEl.textContent = result.item_description || '';
-    handleEl.textContent = result.sub_handle;
-    amountEl.textContent = formatGBP(result.tribute_amount);
     
-    if (result.is_already_funded) {
-      altarStatusEl.textContent = 'Fully Funded ✦';
-      altarStatusEl.style.color = '#e8c547';
+    const raised = Number(result.item_raised_amount) || 0;
+    const goal = Number(result.item_goal_amount) || 0;
+    if (raised >= goal) {
+      progressEl.innerHTML = `Altar status: <span>Fully Funded ✦</span>`;
     } else {
-      const remaining = Number(result.item_goal_amount) - Number(result.item_raised_amount);
-      altarStatusEl.textContent = formatGBP(remaining) + ' to fill';
+      const remaining = goal - raised;
+      progressEl.innerHTML = `Altar progress: <span>${formatGBP(raised)} / ${formatGBP(goal)}</span> · ${formatGBP(remaining)} to fill`;
     }
     
-    // Throne link
-    if (result.item_throne_url) {
-      throneLink.href = result.item_throne_url;
-    } else {
-      throneLink.style.opacity = '0.5';
-      throneLink.style.pointerEvents = 'none';
-      throneLink.querySelector('span').textContent = 'Throne Link Coming Soon';
-    }
+    // Build tier buttons
+    buildTierButtons(result);
     
-    // Twitter share
-    const shareText = `Goddess @SophiaTruee has decreed: I shall fund Her ${result.item_display_name} 👑`;
-    const shareUrl = window.location.origin + window.location.pathname.replace('wheel.html', '');
-    document.getElementById('share-twitter').href = 
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    // Wire platform buttons
+    wirePlatformButtons(result);
     
-    // Copy campaign link
-    document.getElementById('copy-link-btn').addEventListener('click', async (e) => {
-      e.preventDefault();
-      const btn = e.currentTarget;
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        btn.classList.add('copied');
-        btn.textContent = '✓ Copied';
-        setTimeout(() => {
-          btn.classList.remove('copied');
-          btn.textContent = 'Copy Campaign Link';
-        }, 2000);
-      } catch (err) {
-        console.error('Copy failed:', err);
-      }
-    });
+    // Wire form
+    wireContributionForm(result);
     
-    // Clear localStorage token now that they've spun
+    // Wire share buttons
+    wireShareButtons(result);
+    
+    // Clear localStorage now that they've spun
     try {
       localStorage.removeItem('throne_spin_token');
     } catch (e) { /* ignore */ }
     
     showState('result-state');
+  }
+  
+  /* --- Tier buttons ------------------------------------------- */
+  
+  function buildTierButtons(result) {
+    const container = document.getElementById('tier-buttons');
+    container.innerHTML = '';
+    
+    const tiers = [
+      { amount: Number(result.tier_low) || 10, label: 'Tribute' },
+      { amount: Number(result.tier_mid) || 25, label: 'Devoted', featured: true },
+      { amount: Number(result.tier_high) || 50, label: 'Worshipful' },
+    ];
+    
+    tiers.forEach(tier => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tier-btn';
+      if (tier.featured) btn.classList.add('tier-btn--featured');
+      btn.dataset.amount = tier.amount;
+      btn.innerHTML = `
+        <span class="tier-btn__amount">${formatGBP(tier.amount)}</span>
+        <span class="tier-btn__label">${tier.label}</span>
+      `;
+      
+      btn.addEventListener('click', () => {
+        selectAmount(tier.amount);
+        // Update visual state
+        document.querySelectorAll('.tier-btn').forEach(b => 
+          b.classList.toggle('tier-btn--selected', b === btn)
+        );
+        // Clear custom input
+        document.getElementById('custom-amount-input').value = '';
+      });
+      
+      container.appendChild(btn);
+    });
+    
+    // Wire custom amount input
+    const customInput = document.getElementById('custom-amount-input');
+    customInput.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      if (val > 0) {
+        selectAmount(val);
+        // Clear tier button selection
+        document.querySelectorAll('.tier-btn').forEach(b => 
+          b.classList.remove('tier-btn--selected')
+        );
+      }
+    });
+  }
+  
+  function selectAmount(amount) {
+    state.selectedAmount = amount;
+    document.getElementById('selected-amount-text').textContent = formatGBP(amount);
+    document.getElementById('selected-amount-display').hidden = false;
+    
+    // Auto-fill the form amount
+    document.getElementById('cf-amount').value = amount;
+    
+    // Unlock step 2
+    const platformBlock = document.getElementById('platform-block');
+    platformBlock.classList.add('contribution-block--unlocked');
+  }
+  
+  /* --- Platform buttons ---------------------------------------- */
+  
+  function wirePlatformButtons(result) {
+    document.querySelectorAll('.platform-btn').forEach(btn => {
+      const platformKey = btn.dataset.platform;
+      
+      // Set the URL: Throne uses the item-specific URL; others use general platform URL
+      if (btn.tagName === 'A') {
+        if (platformKey === 'throne' && result.item_throne_url) {
+          btn.href = result.item_throne_url;
+        } else if (config.PLATFORMS[platformKey]) {
+          btn.href = config.PLATFORMS[platformKey];
+        } else {
+          btn.href = '#';
+        }
+      }
+      
+      btn.addEventListener('click', () => {
+        // Mark as clicked
+        document.querySelectorAll('.platform-btn').forEach(b => 
+          b.classList.remove('platform-btn--clicked')
+        );
+        btn.classList.add('platform-btn--clicked');
+        
+        // Auto-fill the form platform field
+        document.getElementById('cf-platform').value = platformKey;
+        
+        // Unlock step 3
+        const confirmBlock = document.getElementById('confirm-block');
+        confirmBlock.classList.add('contribution-block--unlocked');
+        
+        // Smooth-scroll to confirm form on mobile/longer screens
+        setTimeout(() => {
+          confirmBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+      });
+    });
+  }
+  
+  /* --- Contribution form --------------------------------------- */
+  
+  function wireContributionForm(result) {
+    const form = document.getElementById('contribution-form');
+    const submitBtn = document.getElementById('cf-submit');
+    const submitText = submitBtn.querySelector('.cf-submit-text');
+    const submitLoader = submitBtn.querySelector('.cf-submit-loader');
+    const errorEl = document.getElementById('cf-error');
+    
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.hidden = false;
+    }
+    
+    function setLoading(isLoading) {
+      submitBtn.disabled = isLoading;
+      submitText.hidden = isLoading;
+      submitLoader.hidden = !isLoading;
+    }
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      
+      const handle = document.getElementById('cf-handle').value.trim();
+      const platform = document.getElementById('cf-platform').value;
+      const amount = parseFloat(document.getElementById('cf-amount').value);
+      const proofUrl = document.getElementById('cf-proof').value.trim() || null;
+      const notes = document.getElementById('cf-notes').value.trim() || null;
+      
+      if (!handle) { showError('Please enter your handle'); return; }
+      if (!platform) { showError('Please select the platform you sent it on'); return; }
+      if (!amount || amount <= 0) { showError('Please enter a valid amount'); return; }
+      
+      setLoading(true);
+      
+      try {
+        const { data, error } = await supabase.rpc('submit_item_contribution', {
+          p_sub_handle: handle,
+          p_platform: platform,
+          p_amount: amount,
+          p_item_id: result.item_id,
+          p_spin_token: state.token,
+          p_proof_url: proofUrl,
+          p_notes: notes,
+        });
+        
+        if (error) throw error;
+        
+        // Show success state
+        document.getElementById('amount-block').hidden = true;
+        document.getElementById('platform-block').hidden = true;
+        document.getElementById('confirm-block').hidden = true;
+        
+        const successBlock = document.getElementById('success-block');
+        document.getElementById('success-item-name').textContent = result.item_display_name;
+        successBlock.hidden = false;
+        successBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+      } catch (err) {
+        console.error('Contribution submit error:', err);
+        showError(err.message || 'Something went wrong. Please try again.');
+        setLoading(false);
+      }
+    });
+  }
+  
+  /* --- Share buttons ------------------------------------------- */
+  
+  function wireShareButtons(result) {
+    const shareText = `Goddess @SophiaTruee has decreed: I shall fund Her ${result.item_display_name} 👑`;
+    const shareUrl = window.location.origin + window.location.pathname.replace('wheel.html', '');
+    
+    document.getElementById('share-twitter').href = 
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    
+    const copyBtn = document.getElementById('copy-link-btn');
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        copyBtn.classList.add('copied');
+        copyBtn.textContent = '✓ Copied';
+        setTimeout(() => {
+          copyBtn.classList.remove('copied');
+          copyBtn.textContent = 'Copy Campaign Link';
+        }, 2000);
+      } catch (err) {
+        console.error('Copy failed:', err);
+      }
+    });
   }
   
   /* --- Boot logic ---------------------------------------------- */
@@ -234,8 +413,8 @@
       return;
     }
     
-    // First, check the claim status by token
     try {
+      // Check claim status
       const { data: claimRows, error: claimErr } = await supabase.rpc('get_claim_by_token', {
         claim_token: state.token,
       });
@@ -273,12 +452,24 @@
           return;
         }
         
+        // Need tier amounts which aren't in get_spin_result - fetch from items
+        const { data: itemData } = await supabase
+          .from('public_items')
+          .select('*')
+          .eq('id', result.item_id)
+          .single();
+        
+        if (itemData) {
+          result.tier_low = itemData.tier_low;
+          result.tier_mid = itemData.tier_mid;
+          result.tier_high = itemData.tier_high;
+        }
+        
         renderResult(result, false);
         return;
       }
       
-      // Approved + not yet spun = ready to spin
-      // Load items to build the wheel
+      // Approved + not yet spun
       const { data: items, error: itemsErr } = await supabase
         .from('public_items')
         .select('*')
@@ -288,9 +479,8 @@
       
       state.items = items;
       
-      // Build the wheel in both ready & spinning states
+      // Build the wheel
       buildWheelSVG(items, document.getElementById('wheel'));
-      buildWheelSVG(items, document.getElementById('wheel-spinning'));
       
       showState('ready-state');
       
@@ -310,7 +500,7 @@
     btn.disabled = true;
     
     try {
-      // Call the server-side spin function — it picks the item and marks used atomically
+      // Server picks the winner and marks spin used
       const { data: spinRows, error: spinErr } = await supabase.rpc('perform_spin', {
         claim_token: state.token,
       });
@@ -320,38 +510,45 @@
       const result = Array.isArray(spinRows) && spinRows.length > 0 ? spinRows[0] : null;
       if (!result) throw new Error('No result returned');
       
-      // Find the index of the chosen item in our wheel
+      // Find target index in our wheel
       const targetIndex = state.items.findIndex(i => i.id === result.item_id);
       if (targetIndex === -1) {
-        // Shouldn't happen, but handle gracefully
+        // Shouldn't happen
+        // Fetch tier amounts since perform_spin doesn't return them
+        const { data: itemData } = await supabase
+          .from('public_items')
+          .select('*')
+          .eq('id', result.item_id)
+          .single();
+        if (itemData) {
+          result.tier_low = itemData.tier_low;
+          result.tier_mid = itemData.tier_mid;
+          result.tier_high = itemData.tier_high;
+        }
         renderResult(result, true);
         return;
       }
       
-      // Switch to spinning state
-      showState('spinning-state');
+      // Animate the wheel to land on the target
+      const wheelEl = document.getElementById('wheel');
+      await spinWheelToTarget(wheelEl, targetIndex, state.items.length);
       
-      // Wait a beat for atmosphere
+      // Brief pause for atmosphere
       await new Promise(r => setTimeout(r, 800));
       
-      // Stop the eternal-spin animation, then animate to the target
-      const spinningWheel = document.getElementById('wheel-spinning');
-      spinningWheel.classList.remove('wheel--spinning');
-      spinningWheel.style.transform = 'rotate(0deg)';
-      // Force reflow so the next transform animates
-      spinningWheel.offsetWidth;
-      
-      await spinWheelToTarget(spinningWheel, targetIndex, state.items.length);
-      
-      // Brief pause before showing result
-      await new Promise(r => setTimeout(r, 600));
+      // Fetch tier amounts for the chosen item
+      const chosenItem = state.items.find(i => i.id === result.item_id);
+      if (chosenItem) {
+        result.tier_low = chosenItem.tier_low;
+        result.tier_mid = chosenItem.tier_mid;
+        result.tier_high = chosenItem.tier_high;
+      }
       
       renderResult(result, true);
       
     } catch (err) {
       console.error('Spin failed:', err);
       btn.disabled = false;
-      // Could show an error state here
       alert('The throne could not process your spin: ' + (err.message || 'Unknown error'));
     }
   }

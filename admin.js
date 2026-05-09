@@ -138,8 +138,22 @@
         minute: '2-digit',
       });
       
+      // Distinguish qualifying tributes from item contributions
+      const isContribution = claim.claim_type === 'contribution';
+      const typeBadge = isContribution
+        ? `<span class="claim-card__type-badge claim-card__type-badge--contribution">Item Contribution</span>`
+        : `<span class="claim-card__type-badge claim-card__type-badge--qualifying">Qualifying Tribute</span>`;
+      
+      const itemFieldHtml = isContribution && claim.item_name
+        ? `<div class="claim-card__field">
+            <span class="claim-card__field-label">Allocated To</span>
+            <span class="claim-card__field-value claim-card__field-value--item">${escapeHtml(claim.item_name)}</span>
+          </div>`
+        : '';
+      
       card.innerHTML = `
         <div class="claim-card__main">
+          <div class="claim-card__type-row">${typeBadge}</div>
           <div class="claim-card__field">
             <span class="claim-card__field-label">Handle</span>
             <span class="claim-card__field-value">${escapeHtml(claim.sub_handle)}</span>
@@ -152,6 +166,7 @@
             <span class="claim-card__field-label">Amount</span>
             <span class="claim-card__field-value claim-card__field-value--amount">£${Number(claim.amount).toLocaleString('en-GB')}</span>
           </div>
+          ${itemFieldHtml}
           <div class="claim-card__field">
             <span class="claim-card__field-label">Submitted</span>
             <span class="claim-card__field-value">${submittedTime}</span>
