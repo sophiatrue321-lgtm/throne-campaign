@@ -121,6 +121,45 @@ body {
   gap: 0.75rem;
 }
 
+.resume-banner {
+  position: relative;
+  z-index: 11;
+  background: linear-gradient(90deg, var(--burgundy), var(--wine-rich), var(--burgundy));
+  padding: 0.85rem var(--space-md);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--gold-rich);
+  animation: slideDown 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.resume-banner a {
+  color: var(--gold-bright);
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--gold-rich);
+  padding-bottom: 0.1rem;
+  transition: all 0.3s;
+}
+
+.resume-banner a:hover {
+  color: var(--cream);
+  border-color: var(--gold-bright);
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 .banner__pulse {
   width: 8px;
   height: 8px;
@@ -368,6 +407,24 @@ body {
   color: var(--cream-soft);
   font-size: 0.95rem;
   opacity: 0.7;
+}
+
+.totals__tributers {
+  margin-top: var(--space-md);
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--cream-soft);
+  opacity: 0.6;
+  font-size: 0.95rem;
+}
+
+.totals__tributers-count {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--gold-rich);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  margin-right: 0.5rem;
 }
 
 /* ============================================================
@@ -684,8 +741,12 @@ body {
   transition: all 0.3s;
   display: inline-block;
   margin-bottom: 0.75rem;
-  pointer-events: none;
-  opacity: 0.5;
+}
+
+.tribute__claim-link:hover {
+  color: var(--cream);
+  border-color: var(--gold-bright);
+  letter-spacing: 0.25em;
 }
 
 .tribute__claim-note {

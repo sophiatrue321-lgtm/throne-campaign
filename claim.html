@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claim Your Spin — The Throne Campaign</title>
+<meta name="description" content="Submit your tribute proof to claim your spin of the throne.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="forms.css">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-vignette"></div>
+<div class="bg-ornament bg-ornament--top-left"></div>
+<div class="bg-ornament bg-ornament--bottom-right"></div>
+
+<nav class="page-nav">
+  <a href="index.html" class="page-nav__back">← The Throne Campaign</a>
+</nav>
+
+<main class="form-page">
+  <div class="form-page__inner">
+    
+    <!-- The form (initial state) -->
+    <section class="form-card" id="form-section">
+      <p class="form-card__eyebrow">Approach the Gate</p>
+      <h1 class="form-card__title">Claim Your Spin</h1>
+      <p class="form-card__lede">
+        You have tributed. You have proven your devotion at the gate.<br>
+        Submit proof below and Goddess will grant your audience.
+      </p>
+      
+      <form id="claim-form" class="form" novalidate>
+        
+        <div class="form__field">
+          <label for="handle">Your Handle</label>
+          <input 
+            type="text" 
+            id="handle" 
+            name="handle" 
+            required 
+            autocomplete="username"
+            placeholder="@yourname"
+            maxlength="60"
+          >
+          <p class="form__hint">The handle you tributed under (e.g. @username on LoyalFans)</p>
+        </div>
+        
+        <div class="form__field">
+          <label for="platform">Platform You Tributed On</label>
+          <select id="platform" name="platform" required>
+            <option value="">— Select platform —</option>
+            <option value="loyalfans">LoyalFans</option>
+            <option value="throne">Throne</option>
+            <option value="iwc">IWantClips</option>
+            <option value="c4s">Clips4Sale</option>
+            <option value="tipfunder">Tipfunder</option>
+            <option value="other">Other (specify in notes)</option>
+          </select>
+        </div>
+        
+        <div class="form__field">
+          <label for="amount">Tribute Amount (£)</label>
+          <input 
+            type="number" 
+            id="amount" 
+            name="amount" 
+            required 
+            min="10"
+            step="1"
+            placeholder="10"
+          >
+          <p class="form__hint">Minimum £10 for one spin</p>
+        </div>
+        
+        <div class="form__field">
+          <label for="proof_url">Proof Link <span class="form__optional">(recommended)</span></label>
+          <input 
+            type="url" 
+            id="proof_url" 
+            name="proof_url" 
+            placeholder="https://..."
+            maxlength="500"
+          >
+          <p class="form__hint">Link to a screenshot of your tribute (e.g. on Imgur, or a DM screenshot URL). Speeds up approval.</p>
+        </div>
+        
+        <div class="form__field">
+          <label for="notes">Notes <span class="form__optional">(optional)</span></label>
+          <textarea 
+            id="notes" 
+            name="notes" 
+            rows="3" 
+            placeholder="Anything Goddess should know..."
+            maxlength="500"
+          ></textarea>
+        </div>
+        
+        <button type="submit" class="form__submit" id="submit-btn">
+          <span class="form__submit-text">Submit Tribute Proof</span>
+          <span class="form__submit-loader" hidden>Submitting...</span>
+        </button>
+        
+        <p class="form__error" id="form-error" hidden></p>
+        
+      </form>
+    </section>
+    
+    <!-- Success state (hidden initially) -->
+    <section class="form-card form-card--success" id="success-section" hidden>
+      <div class="form-card__crown" aria-hidden="true">
+        <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 50 L20 20 L35 35 L50 10 L65 35 L80 20 L90 50 Z" 
+                fill="none" stroke="currentColor" stroke-width="1.5" 
+                stroke-linejoin="round"/>
+          <circle cx="20" cy="20" r="2" fill="currentColor"/>
+          <circle cx="50" cy="10" r="3" fill="currentColor"/>
+          <circle cx="80" cy="20" r="2" fill="currentColor"/>
+          <line x1="10" y1="55" x2="90" y2="55" stroke="currentColor" stroke-width="1"/>
+        </svg>
+      </div>
+      <p class="form-card__eyebrow">Submitted</p>
+      <h1 class="form-card__title">Your Tribute Awaits Review</h1>
+      <p class="form-card__lede">
+        Goddess will review your tribute shortly. Once approved, you may spin.
+      </p>
+      
+      <div class="form-card__warning">
+        <strong>⚠ Save this link.</strong> 
+        Bookmark it. Screenshot it. Email it to yourself.<br>
+        This is the ONLY way to access your spin.
+      </div>
+      
+      <div class="spin-link-box">
+        <p class="spin-link-box__label">Your Personal Spin Link</p>
+        <div class="spin-link-box__url" id="spin-url"></div>
+        <button type="button" class="spin-link-box__copy" id="copy-btn">
+          📋 Copy Link
+        </button>
+      </div>
+      
+      <a href="#" class="form-card__cta" id="goto-spin">
+        Visit Your Spin Page →
+      </a>
+      
+      <p class="form-card__note">
+        Approval typically takes a few hours. Return to your spin link any time to check status.
+      </p>
+    </section>
+    
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="claim.js"></script>
+</body>
+</html>

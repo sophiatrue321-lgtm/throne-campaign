@@ -57,6 +57,23 @@
     }, 400);
   }
   
+  /* --- Render: tributer count (spectator counter) -------------- */
+  
+  async function renderTributerStats() {
+    const { data, error } = await supabase
+      .from('public_tribute_stats')
+      .select('*')
+      .single();
+    
+    if (error) {
+      console.error('Failed to load tributer stats:', error);
+      return;
+    }
+    
+    const count = Number(data.total_tributers) || 0;
+    document.getElementById('tributer-count').textContent = count.toLocaleString('en-GB');
+  }
+  
   /* --- Render: items grid -------------------------------------- */
   
   async function renderItems() {
@@ -131,16 +148,38 @@
     });
   }
   
+  /* --- Check for pending spin in localStorage ------------------ */
+  
+  function checkPendingSpin() {
+    try {
+      const token = localStorage.getItem('throne_spin_token');
+      if (!token) return;
+      
+      // Show a discreet "resume" banner
+      const banner = document.createElement('div');
+      banner.className = 'resume-banner';
+      banner.innerHTML = `
+        <span>You have a pending spin from your last visit.</span>
+        <a href="spin.html?token=${encodeURIComponent(token)}">Resume →</a>
+      `;
+      document.body.insertBefore(banner, document.body.firstChild);
+    } catch (e) {
+      // localStorage might be disabled
+    }
+  }
+  
   /* --- Boot ---------------------------------------------------- */
   
   async function boot() {
     wirePlatformLinks();
+    checkPendingSpin();
     
     try {
-      // Run both in parallel for speed
+      // Run all in parallel for speed
       await Promise.all([
         renderTotals(),
         renderItems(),
+        renderTributerStats(),
       ]);
     } catch (err) {
       console.error('Boot error:', err);

@@ -1,0 +1,376 @@
+/* ============================================================
+   FORMS — Shared styles for claim, spin, admin pages
+   ============================================================ */
+
+.page-nav {
+  position: relative;
+  z-index: 10;
+  padding: 1.25rem 2rem;
+}
+
+.page-nav__back {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-rich);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.page-nav__back:hover {
+  color: var(--gold-bright);
+}
+
+.form-page {
+  position: relative;
+  z-index: 5;
+  min-height: 80vh;
+  padding: 2rem 1.5rem 6rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.form-page__inner {
+  max-width: 600px;
+  width: 100%;
+}
+
+/* Form card */
+
+.form-card {
+  background: linear-gradient(135deg, rgba(74, 20, 36, 0.5) 0%, rgba(42, 10, 19, 0.7) 100%);
+  border: 1px solid rgba(212, 160, 23, 0.25);
+  padding: 3rem 2.5rem;
+  position: relative;
+  backdrop-filter: blur(10px);
+  text-align: center;
+  animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.form-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-rich), transparent);
+}
+
+.form-card--success::before,
+.form-card--ready::before {
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+  height: 2px;
+}
+
+.form-card__crown {
+  width: 70px;
+  margin: 0 auto 1.5rem;
+  color: var(--gold-rich);
+  filter: drop-shadow(0 0 15px rgba(212, 160, 23, 0.4));
+}
+
+.form-card__crown--gold {
+  color: var(--gold-bright);
+  filter: drop-shadow(0 0 25px rgba(232, 197, 71, 0.6));
+  animation: glow 4s ease-in-out infinite;
+}
+
+.form-card__eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--gold-rich);
+  margin-bottom: 1rem;
+}
+
+.form-card__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 400;
+  color: var(--cream);
+  margin-bottom: 1rem;
+  line-height: 1.1;
+}
+
+.form-card__lede {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--cream-soft);
+  opacity: 0.85;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.form-card__details {
+  font-family: var(--font-body);
+  text-align: left;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(212, 160, 23, 0.15);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-card__details > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  font-size: 0.95rem;
+}
+
+.form-card__details > div + div {
+  border-top: 1px solid rgba(212, 160, 23, 0.1);
+}
+
+.form-card__details span {
+  color: var(--gold-rich);
+  opacity: 0.7;
+}
+
+.form-card__details strong {
+  color: var(--cream);
+  font-weight: 500;
+}
+
+.form-card__warning {
+  background: rgba(168, 38, 73, 0.15);
+  border: 1px solid var(--burgundy-glow);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-body);
+  color: var(--cream);
+  font-size: 0.95rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.form-card__warning strong {
+  color: var(--gold-bright);
+}
+
+.form-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
+  background: linear-gradient(135deg, var(--burgundy) 0%, var(--wine-rich) 100%);
+  border: 1px solid var(--gold-rich);
+  color: var(--gold-pale);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  margin-bottom: 1rem;
+}
+
+.form-card__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(168, 38, 73, 0.4);
+  border-color: var(--gold-bright);
+  color: var(--cream);
+}
+
+.form-card__cta--large {
+  padding: 1.4rem 3rem;
+  font-size: 1rem;
+  letter-spacing: 0.3em;
+}
+
+.form-card__cta-secondary {
+  background: transparent;
+  border: 1px solid rgba(212, 160, 23, 0.3);
+  color: var(--gold-rich);
+  padding: 0.75rem 2rem;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.form-card__cta-secondary:hover {
+  border-color: var(--gold-rich);
+  color: var(--gold-bright);
+}
+
+.form-card__note {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--gold-rich);
+  opacity: 0.65;
+  margin-top: 1rem;
+  line-height: 1.5;
+}
+
+/* Form fields */
+
+.form {
+  text-align: left;
+}
+
+.form__field {
+  margin-bottom: 1.25rem;
+}
+
+.form__field label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold-rich);
+  margin-bottom: 0.5rem;
+}
+
+.form__optional {
+  font-style: italic;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  opacity: 0.6;
+  font-size: 0.65rem;
+}
+
+.form__field input,
+.form__field select,
+.form__field textarea {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(212, 160, 23, 0.25);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.85rem 1rem;
+  transition: all 0.3s;
+}
+
+.form__field input:focus,
+.form__field select:focus,
+.form__field textarea:focus {
+  outline: none;
+  border-color: var(--gold-rich);
+  background: rgba(0,0,0,0.6);
+  box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.1);
+}
+
+.form__field textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: var(--font-body);
+}
+
+.form__hint {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--cream-soft);
+  opacity: 0.6;
+  margin-top: 0.4rem;
+}
+
+.form__submit {
+  width: 100%;
+  padding: 1.1rem;
+  background: linear-gradient(135deg, var(--burgundy) 0%, var(--wine-rich) 100%);
+  border: 1px solid var(--gold-rich);
+  color: var(--gold-pale);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  margin-top: 0.5rem;
+}
+
+.form__submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(168, 38, 73, 0.5);
+  border-color: var(--gold-bright);
+  color: var(--cream);
+}
+
+.form__submit:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.form__error {
+  background: rgba(168, 38, 73, 0.2);
+  border: 1px solid var(--burgundy-glow);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 0.85rem 1rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* Spin link box (success state) */
+
+.spin-link-box {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--gold-rich);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.spin-link-box__label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-rich);
+  margin-bottom: 0.5rem;
+}
+
+.spin-link-box__url {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--gold-bright);
+  word-break: break-all;
+  background: rgba(0,0,0,0.4);
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  border: 1px dashed rgba(212, 160, 23, 0.2);
+  text-align: left;
+  line-height: 1.4;
+}
+
+.spin-link-box__copy {
+  background: var(--burgundy);
+  border: 1px solid var(--gold-rich);
+  color: var(--gold-pale);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.spin-link-box__copy:hover {
+  background: var(--burgundy-glow);
+  color: var(--cream);
+}
+
+.spin-link-box__copy.copied {
+  background: var(--gold-deep);
+  border-color: var(--gold-bright);
+  color: var(--ink);
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .form-card {
+    padding: 2rem 1.5rem;
+  }
+}
