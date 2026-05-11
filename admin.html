@@ -63,12 +63,6 @@
     <button class="admin-tab" data-tab="thermometers">
       Thermometers
     </button>
-    <button class="admin-tab" data-tab="recovery">
-      Link Recovery
-    </button>
-    <button class="admin-tab" data-tab="ledger">
-      Ledger
-    </button>
     <button class="admin-tab" data-tab="stats">
       Stats
     </button>
@@ -98,67 +92,6 @@
     
     <div id="thermometer-list" class="admin-thermometers">
       <p class="admin-empty">Loading items...</p>
-    </div>
-  </section>
-  
-  <!-- Link Recovery tab -->
-  <section class="admin-section" id="recovery-section" hidden>
-    <div class="admin-section__header">
-      <h2>Link Recovery</h2>
-      <p class="admin-section__hint">
-        Search for a sub's spin link by their handle. Returns all claims (qualifying + contributions) ever submitted under that handle.
-      </p>
-    </div>
-    
-    <div class="recovery-search">
-      <input type="text" id="recovery-input" class="recovery-search__input" 
-             placeholder="Enter handle (e.g. peter or @peter) — partial matches OK">
-      <button type="button" id="recovery-search-btn" class="recovery-search__btn">Search</button>
-    </div>
-    
-    <div id="recovery-results" class="recovery-results">
-      <p class="admin-empty">Enter a handle above to search.</p>
-    </div>
-  </section>
-  
-  <!-- Ledger tab -->
-  <section class="admin-section" id="ledger-section" hidden>
-    <div class="admin-section__header">
-      <h2>Activity Ledger</h2>
-      <p class="admin-section__hint">
-        Full chronological history of all campaign events. Filter and search to find specific transactions.
-      </p>
-    </div>
-    
-    <div class="ledger-filters">
-      <div class="ledger-filter">
-        <label for="ledger-event-filter">Event Type</label>
-        <select id="ledger-event-filter">
-          <option value="">All events</option>
-          <option value="qualifying_submitted">Qualifying tributes submitted</option>
-          <option value="qualifying_approved">Qualifying tributes approved</option>
-          <option value="spin_completed">Spins completed</option>
-          <option value="contribution_submitted">Contributions submitted</option>
-          <option value="contribution_approved">Contributions approved</option>
-          <option value="rejected">Rejections</option>
-        </select>
-      </div>
-      <div class="ledger-filter">
-        <label for="ledger-handle-filter">Handle (optional)</label>
-        <input type="text" id="ledger-handle-filter" placeholder="Filter by handle">
-      </div>
-      <div class="ledger-filter ledger-filter--actions">
-        <button type="button" id="ledger-apply-btn" class="ledger-apply-btn">Apply Filters</button>
-        <button type="button" id="ledger-export-btn" class="ledger-export-btn">Export CSV</button>
-      </div>
-    </div>
-    
-    <div id="ledger-list" class="ledger-list">
-      <p class="admin-empty">Loading activity...</p>
-    </div>
-    
-    <div class="ledger-load-more" id="ledger-load-more" hidden>
-      <button type="button" id="ledger-more-btn" class="ledger-more-btn">Load More</button>
     </div>
   </section>
   
