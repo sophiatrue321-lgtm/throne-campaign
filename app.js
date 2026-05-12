@@ -102,10 +102,25 @@
       const goal = Number(item.goal_amount) || 0;
       const pct = Number(item.percentage_funded) || 0;
       const funded = pct >= 100;
+      const completed = item.is_active === false;
       
       const card = document.createElement('article');
-      card.className = 'item' + (funded ? ' item--funded' : '');
+      let cardClass = 'item';
+      if (funded) cardClass += ' item--funded';
+      if (completed) cardClass += ' item--completed';
+      card.className = cardClass;
       card.style.animationDelay = (idx * 80) + 'ms';
+      
+      // Status message at the bottom of the card
+      let statusHtml = '';
+      if (completed) {
+        statusHtml = '<p class="item__status item__status--completed">★ COMPLETED ★</p>';
+      } else if (funded) {
+        statusHtml = '<p class="item__percentage">✦ Fully Funded ✦</p>';
+      } else {
+        statusHtml = '<p class="item__percentage">' + pct.toFixed(1) + '% claimed</p>';
+      }
+      
       card.innerHTML = `
         <p class="item__rank">${pad2(idx + 1)} · Altar</p>
         <h3 class="item__name">${item.display_name}</h3>
@@ -117,9 +132,7 @@
         <div class="item__bar">
           <div class="item__bar-fill" data-pct="${pct}"></div>
         </div>
-        <p class="item__percentage">
-          ${funded ? '✦ Fully Funded ✦' : pct.toFixed(1) + '% claimed'}
-        </p>
+        ${statusHtml}
       `;
       
       grid.appendChild(card);
