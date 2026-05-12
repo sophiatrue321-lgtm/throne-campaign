@@ -224,7 +224,7 @@
     try {
       const { data, error } = await supabase
         .from('items')
-        .select('id, slug, display_name, goal_amount, raised_amount, throne_url, display_order')
+        .select('id, slug, display_name, goal_amount, raised_amount, throne_url, display_order, is_active')
         .order('display_order');
       
       if (error) {
@@ -241,66 +241,247 @@
       data.forEach(item => {
         const card = document.createElement('div');
         card.className = 'therm-card';
+        if (!item.is_active) {
+          card.className += ' therm-card--inactive';
+        }
         card.dataset.itemId = item.id;
+        card.dataset.itemName = item.display_name;
         
         const throneLink = item.throne_url
           ? '<a href="' + escapeHtml(item.throne_url) + '" target="_blank" rel="noopener noreferrer" class="therm-card__throne-link">View on Throne &#8599;</a>'
           : '';
         
+        const statusBadge = item.is_active
+          ? '<span class="therm-card__badge therm-card__badge--active">On Wheel</span>'
+          : '<span class="therm-card__badge therm-card__badge--inactive">Complete &mdash; Off Wheel</span>';
+        
+        const toggleBtn = item.is_active
+          ? '<button type="button" class="therm-card__complete-btn" data-action="complete">Mark Complete &amp; Remove From Wheel</button>'
+          : '<button type="button" class="therm-card__reactivate-btn" data-action="reactivate">Reactivate &amp; Return To Wheel</button>';
+        
         card.innerHTML = 
-          '<h3 class="therm-card__name">' + escapeHtml(item.display_name) + '</h3>' +
+          '<div class="therm-card__header">' +
+            '<h3 class="therm-card__name">' + escapeHtml(item.display_name) + '</h3>' +
+            statusBadge +
+          '</div>' +
           '<p class="therm-card__current">Currently: &pound;' + Number(item.raised_amount).toLocaleString('en-GB') + 
             ' / &pound;' + Number(item.goal_amount).toLocaleString('en-GB') + '</p>' +
           '<div class="therm-card__form">' +
             '<input type="number" class="therm-card__input" placeholder="New total &pound;" min="0" step="0.01" value="' + item.raised_amount + '">' +
             '<button type="button" class="therm-card__save" data-action="save">Save</button>' +
           '</div>' +
-          throneLink;
+          '<div class="therm-card__bottom">' +
+            toggleBtn +
+            throneLink +
+          '</div>';
         
         list.appendChild(card);
       });
       
-      // Wire save buttons
-      list.querySelectorAll('.therm-card__save').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const card = btn.closest('.therm-card');
-          const itemId = parseInt(card.dataset.itemId);
-          const input = card.querySelector('.therm-card__input');
-          const newAmount = parseFloat(input.value);
-          
-          if (isNaN(newAmount) || newAmount < 0) {
-            alert('Please enter a valid amount');
-            return;
-          }
-          
-          btn.disabled = true;
-          btn.textContent = 'Saving...';
-          
-          const { data, error } = await supabase.rpc('admin_update_item_raised', {
-            p_item_id: itemId,
-            p_new_amount: newAmount,
+      // Wire all buttons
+      list.querySelectorAll('[data-action]').forEach(btn => {
+        const action = btn.dataset.action;
+        
+        if (action === 'save') {
+          btn.addEventListener('click', async () => {
+            const card = btn.closest('.therm-card');
+            const itemId = parseInt(card.dataset.itemId);
+            const input = card.querySelector('.therm-card__input');
+            const newAmount = parseFloat(input.value);
+            
+            if (isNaN(newAmount) || newAmount < 0) {
+              alert('Please enter a valid amount');
+              return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            
+            const { data, error } = await supabase.rpc('admin_update_item_raised', {
+              p_item_id: itemId,
+              p_new_amount: newAmount,
+            });
+            
+            if (error) {
+              alert('Failed: ' + error.message);
+              btn.disabled = false;
+              btn.textContent = 'Save';
+              return;
+            }
+            
+            btn.classList.add('saved');
+            btn.textContent = '\u2713 Saved';
+            setTimeout(() => {
+              btn.classList.remove('saved');
+              btn.textContent = 'Save';
+              btn.disabled = false;
+              loadThermometers();
+            }, 1500);
           });
-          
-          if (error) {
-            alert('Failed: ' + error.message);
-            btn.disabled = false;
-            btn.textContent = 'Save';
-            return;
-          }
-          
-          btn.classList.add('saved');
-          btn.textContent = '\u2713 Saved';
-          setTimeout(() => {
-            btn.classList.remove('saved');
-            btn.textContent = 'Save';
-            btn.disabled = false;
+        }
+        
+        if (action === 'complete' || action === 'reactivate') {
+          btn.addEventListener('click', async () => {
+            const card = btn.closest('.therm-card');
+            const itemId = parseInt(card.dataset.itemId);
+            const itemName = card.dataset.itemName;
+            const makeActive = action === 'reactivate';
+            
+            const confirmMsg = makeActive
+              ? 'Reactivate ' + itemName + ' and return it to the wheel?'
+              : 'Mark ' + itemName + ' as complete and remove it from the wheel?\n\n' +
+                'Subs who already spun and landed on this item but have not contributed will need their spins reset.';
+            
+            if (!confirm(confirmMsg)) return;
+            
+            btn.disabled = true;
+            btn.textContent = makeActive ? 'Reactivating...' : 'Marking complete...';
+            
+            const { data, error } = await supabase.rpc('admin_set_item_active', {
+              p_item_id: itemId,
+              p_is_active: makeActive,
+            });
+            
+            if (error) {
+              alert('Failed: ' + error.message);
+              btn.disabled = false;
+              btn.textContent = makeActive ? 'Reactivate & Return To Wheel' : 'Mark Complete & Remove From Wheel';
+              return;
+            }
+            
+            // If we just marked as complete, offer to find resettable spins
+            if (!makeActive) {
+              setTimeout(async () => {
+                await offerToShowResettableSpins(itemName);
+              }, 500);
+            }
+            
             loadThermometers();
-          }, 1500);
-        });
+          });
+        }
       });
     } catch (err) {
       list.innerHTML = '<p class="admin-empty">Unexpected error: ' + escapeHtml(err.message || 'Unknown') + '</p>';
     }
+  }
+  
+  // After marking an item complete, check if any subs need their spins reset
+  async function offerToShowResettableSpins(itemName) {
+    try {
+      const { data, error } = await supabase.rpc('admin_find_resettable_spins');
+      
+      if (error || !data || data.length === 0) return;
+      
+      // Filter to just this item's resettable spins
+      const affected = data.filter(s => s.landed_on_item_name === itemName);
+      
+      if (affected.length === 0) return;
+      
+      // Build a message
+      const handles = affected.map(s => s.sub_handle + (s.contribution_submitted ? ' (already contributed)' : ' (no contribution)')).join('\n');
+      
+      const message = affected.length + ' sub(s) landed on ' + itemName + ' previously:\n\n' + 
+                      handles + '\n\n' +
+                      'Click OK to see resettable spins in a popup, or Cancel to ignore.';
+      
+      if (!confirm(message)) return;
+      
+      // Show details with reset option
+      showResettableSpinsModal(affected);
+      
+    } catch (err) {
+      console.error('Could not check resettable spins:', err);
+    }
+  }
+  
+  function showResettableSpinsModal(spins) {
+    // Build a simple modal
+    const overlay = document.createElement('div');
+    overlay.className = 'admin-modal-overlay';
+    
+    let cardsHtml = '';
+    spins.forEach(spin => {
+      const contribBadge = spin.contribution_submitted
+        ? '<span class="reset-spin__badge reset-spin__badge--contributed">Already contributed</span>'
+        : '<span class="reset-spin__badge reset-spin__badge--pending">No contribution yet</span>';
+      
+      cardsHtml += 
+        '<div class="reset-spin-card" data-claim-id="' + escapeHtml(spin.claim_id) + '">' +
+          '<div class="reset-spin__header">' +
+            '<strong>' + escapeHtml(spin.sub_handle) + '</strong>' +
+            contribBadge +
+          '</div>' +
+          '<div class="reset-spin__details">' +
+            'Tribute: &pound;' + Number(spin.amount).toLocaleString('en-GB') + ' &middot; ' +
+            new Date(spin.submitted_at).toLocaleDateString('en-GB') +
+          '</div>' +
+          '<div class="reset-spin__actions">' +
+            '<button type="button" class="reset-spin__btn" data-action="reset">Reset Spin</button>' +
+            '<button type="button" class="reset-spin__btn reset-spin__btn--secondary" data-action="copy-url" data-url="' + escapeHtml(spin.spin_url) + '">Copy Spin URL</button>' +
+          '</div>' +
+        '</div>';
+    });
+    
+    overlay.innerHTML = 
+      '<div class="admin-modal">' +
+        '<div class="admin-modal__header">' +
+          '<h3>Subs With Spins On Completed Item</h3>' +
+          '<button type="button" class="admin-modal__close" data-action="close">&times;</button>' +
+        '</div>' +
+        '<p class="admin-modal__lede">' +
+          'These subs spun and landed on the now-completed item. Reset their spin to give them another chance on the updated wheel.' +
+        '</p>' +
+        '<div class="reset-spins-list">' + cardsHtml + '</div>' +
+      '</div>';
+    
+    document.body.appendChild(overlay);
+    
+    // Wire close
+    overlay.querySelector('[data-action="close"]').addEventListener('click', () => {
+      overlay.remove();
+    });
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.remove();
+    });
+    
+    // Wire reset and copy buttons
+    overlay.querySelectorAll('[data-action="reset"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const card = btn.closest('.reset-spin-card');
+        const claimId = card.dataset.claimId;
+        
+        if (!confirm('Reset this sub\u2019s spin? They will be able to spin again using the same link.')) return;
+        
+        btn.disabled = true;
+        btn.textContent = 'Resetting...';
+        
+        const { error } = await supabase.rpc('admin_reset_spin', { p_claim_id: claimId });
+        
+        if (error) {
+          alert('Failed: ' + error.message);
+          btn.disabled = false;
+          btn.textContent = 'Reset Spin';
+          return;
+        }
+        
+        btn.textContent = '\u2713 Reset';
+        btn.classList.add('reset-spin__btn--done');
+        card.style.opacity = '0.5';
+      });
+    });
+    
+    overlay.querySelectorAll('[data-action="copy-url"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.url);
+          const orig = btn.textContent;
+          btn.textContent = '\u2713 Copied';
+          setTimeout(() => { btn.textContent = orig; }, 1500);
+        } catch (err) {
+          alert('Copy failed: ' + err.message);
+        }
+      });
+    });
   }
   
   /* --- Stats -------------------------------------------- */
