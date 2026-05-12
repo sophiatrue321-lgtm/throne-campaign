@@ -232,6 +232,257 @@
 }
 
 /* ============================================================
+   THERMOMETER CARD ENHANCEMENTS
+   ============================================================ */
+
+.therm-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.therm-card__badge {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  border: 1px solid;
+  font-weight: 600;
+}
+
+.therm-card__badge--active {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: #6bcf6e;
+  color: #8ed991;
+}
+
+.therm-card__badge--inactive {
+  background: rgba(212, 160, 23, 0.15);
+  border-color: var(--gold-bright);
+  color: var(--gold-bright);
+}
+
+.therm-card--inactive {
+  opacity: 0.7;
+}
+
+.therm-card__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(212, 160, 23, 0.15);
+  flex-wrap: wrap;
+}
+
+.therm-card__complete-btn,
+.therm-card__reactivate-btn {
+  padding: 0.6rem 1.25rem;
+  background: transparent;
+  border: 1px solid;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.therm-card__complete-btn {
+  border-color: var(--gold-rich);
+  color: var(--gold-bright);
+}
+
+.therm-card__complete-btn:hover:not(:disabled) {
+  background: rgba(212, 160, 23, 0.15);
+  border-color: var(--gold-bright);
+}
+
+.therm-card__reactivate-btn {
+  border-color: #6bcf6e;
+  color: #8ed991;
+}
+
+.therm-card__reactivate-btn:hover:not(:disabled) {
+  background: rgba(76, 175, 80, 0.15);
+}
+
+.therm-card__complete-btn:disabled,
+.therm-card__reactivate-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* ============================================================
+   ADMIN MODAL (for resettable spins)
+   ============================================================ */
+
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.admin-modal {
+  background: linear-gradient(135deg, #1a0508 0%, #2a0a13 100%);
+  border: 1px solid var(--gold-rich);
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+.admin-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-modal__header h3 {
+  font-family: var(--font-display);
+  color: var(--cream);
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.admin-modal__close {
+  background: none;
+  border: none;
+  color: var(--gold-rich);
+  font-size: 1.75rem;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  line-height: 1;
+  transition: color 0.3s;
+}
+
+.admin-modal__close:hover {
+  color: var(--gold-bright);
+}
+
+.admin-modal__lede {
+  color: var(--cream-soft);
+  font-style: italic;
+  margin-bottom: 1.5rem;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+.reset-spins-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reset-spin-card {
+  background: rgba(74, 20, 36, 0.4);
+  border: 1px solid rgba(212, 160, 23, 0.2);
+  padding: 1rem 1.25rem;
+}
+
+.reset-spin__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reset-spin__header strong {
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.reset-spin__badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+
+.reset-spin__badge--contributed {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: #6bcf6e;
+  color: #8ed991;
+}
+
+.reset-spin__badge--pending {
+  background: rgba(201, 166, 79, 0.15);
+  border-color: #c9a64f;
+  color: #c9a64f;
+}
+
+.reset-spin__details {
+  color: var(--cream-soft);
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.8;
+}
+
+.reset-spin__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reset-spin__btn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold-rich));
+  border: 1px solid var(--gold-bright);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.reset-spin__btn--secondary {
+  background: transparent;
+  color: var(--gold-bright);
+}
+
+.reset-spin__btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.reset-spin__btn--done {
+  background: linear-gradient(135deg, #4caf50, #6bcf6e) !important;
+  color: var(--ink) !important;
+}
+
+/* ============================================================
    LINK RECOVERY TAB
    ============================================================ */
 
